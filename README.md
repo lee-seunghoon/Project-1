@@ -23,6 +23,29 @@
 
 
 
+## 배운점
+
+- 외부 라이브러리 사용 시 공식 문서 숙지의 중요성
+- CORS 정책 
+- Ajax get 방식 data 수/발신 방법
+- Bootstrap Modal 창 구현
+- html 화면 제어 process
+- javascript 웹 화면 로직 처리 process
+- MVT pattern
+- 외부 API 사용 방법 (Google Calendar API, Kakao Map API)
+- Django ORM Database 관리 및 data 처리
+- Django 내장 서버 sqlite3 사용 방법
+
+
+
+## 수상
+
+- 총 6개 팀 중 1등
+
+![image-20210313163530315](md-images/image-20210313163530315.png)
+
+
+
 ## WBS
 
 ![image-20210227122218025](md-images/image-20210227122218025.png)
@@ -111,7 +134,7 @@
 
 - ### <Django 환경 설정>
 
-  (Web_avangs/settings.py)
+  `(Web_avangs/settings.py)`
 
   ```python
   # 수정한 부분만 표기합니다.
@@ -176,7 +199,7 @@
 
 - ### <calendar application model 설정> - data 구성
 
-  (calendars/models.py)
+  `(calendars/models.py)`
 
   ```python
   from django.db import models
@@ -199,7 +222,7 @@
 
 - ### <admin 등록 & sqlite3 db 파일 생성>
 
-  (calendars/admin.py)
+  `(calendars/admin.py)`
 
   ```python
   from django.contrib import admin
@@ -208,8 +231,9 @@
   admin.site.register(Calendar)
   ```
 
+ 
 
-  (Terminal)
+`(Terminal)`
 
   ```Treminal
   # db 변동 내역 저장
@@ -223,7 +247,7 @@
 
 - ### <Calendar 화면 구성>
 
-  (calendars/templates/calendars/ui-calendars.html)
+  **`(calendars/templates/calendars/ui-calendars.html)`**
 
   ```html
   <!doctype html>
@@ -438,7 +462,7 @@
 
 - ### <Calendar 로직 process>
 
-  (static/js/calendar.js)
+  **`(static/js/calendar.js)`**
 
   ```javascript
   
@@ -869,15 +893,246 @@
   
   ```
   
-  
 
 
 
-## 배운점
+## URL Conf
 
-- 외부 라이브러리 사용 시 reference 문서 숙지의 중요성
-- CORS 정책 
-- Ajax get 방식 data 수/발신 방법
-- Bootstrap Modal 창 구현
-- html 화면 제어 process
-- javascript 웹 화면 로직 처리 process
+(Web_avangs/urls.py)
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+from . import views
+
+
+urlpatterns = [
+    path('', views.home, name='home'), # ==> 기본 url 주소일 경우 'Web_avangs/view.py' ==> home 메서드 사용
+    path('admin/', admin.site.urls),   # ==> 관리자 페이지 설정
+    path('users/', include('users.urls')), # ==> users application url conf 따로 관리
+    path('bookmarks/', include('bookmarks.urls')),
+    path('calendars/', include('calendars.urls')), # ==> calendar application url conf 따로 관리 ('calendars/urls.py' 에서!)
+    path('maps/', include('maps.urls')),
+    path('main/', views.main, name='main'),
+]
+```
+
+
+
+(calendars/urls.py)
+
+```python
+from django.urls import path
+from . import views
+
+app_name = 'calendars'  # calendar application의 url 관리를 대표하는 이름!
+
+urlpatterns = [
+    path('', views.calendar, name='calendar'), # ==>'' == 'http://localhost:8000/calendars' url을 의미함.
+    path('save/', views.save, name='save'), 
+    # ==> 'http://localhost:8000/calendars/save/' ==> url 호출할 때, views.py에서 save 함수 실행
+    
+    path('load/', views.load, name='load'),
+    path('fix/', views.fix, name='fix'),
+    path('delete/', views.delete, name='delete'),
+    path('map/', views.map, name='map'),
+    path('resize/', views.resize, name='resize'),
+    path('drop/', views.drop, name='drop'),
+    path('fix_map/', views.fix_map, name='fix_map')
+]
+```
+
+
+
+(calendars/views.py)
+
+```python
+from django.shortcuts import render
+from django.http import HttpResponse
+from calendars.models import Calendar
+import json
+
+
+# Calendar 메인화면 출력
+def calendar(request):
+    return render(request, 'calendars/ui-calendars.html', {'page_title': 'CALENDAR'})
+
+
+# Calendar 일정 이벤트 저장
+def save(request):
+	
+    # save 함수는 ajax 객체를 request로 받는다.
+    
+    event_title = request.GET['e_title']  # ajax를 GET방식으로 사용해서 GET을 사용!
+    event_start = request.GET['e_start']
+    event_end = request.GET['e_end']
+    event_location = request.GET['e_location']
+    event_address = request.GET['e_address']
+    event_color = request.GET['e_color']
+    u_id = request.session['loginObj']['u_name']
+	
+    # Database에 새로운 데이터 생성
+    Calendar.objects.create(username=u_id,
+                            title=event_title,
+                            start=event_start,
+                            end=event_end,
+                            location=event_location,
+                            address=event_address,
+                            color=event_color
+                            )
+	
+    # 가장 최근 data란 위에서 저장한 data를 의미함
+    recent_data = Calendar.objects.filter(username=u_id).order_by('-id')
+	
+    # 이 context는 js에서 ajax방식으로 요청한 결과를 보내주는 내용!
+    context = {'username': u_id,
+               'title': event_title,
+               'start': event_start,
+               'end': event_end,
+               'location': event_location,
+               'address': event_address,
+               'color': event_color,
+               'id': recent_data[0].id
+               }
+
+    return HttpResponse(json.dumps(context), content_type='application/json')
+
+
+# Calendar 일정 이벤트 로드
+def load(request):
+    u_id = request.session['loginObj']['u_name']
+    calendar_list = Calendar.objects.filter(username=u_id)
+
+    context = []
+    for i in calendar_list:
+        list = {'id': i.id,
+                'title': i.title,
+                'start': i.start,
+                'end': i.end,
+                'location': i.location,
+                'address': i.address,
+                'color': i.color
+                }
+        context.append(list)
+
+    return HttpResponse(json.dumps(context), content_type='application/json')
+
+
+# Calendar 일정 이벤트 수정
+def fix(request):
+    u_id = request.session['loginObj']['u_name']
+    event_title = request.GET['e_title']
+    event_start = request.GET['e_start']
+    event_end = request.GET['e_end']
+    event_location = request.GET['e_location']
+    event_address = request.GET['e_address']
+    event_color = request.GET['e_color']
+    event_id = request.GET['e_id']
+
+    event = Calendar.objects.get(id=event_id)
+
+    event.title = event_title
+    event.start = event_start
+    event.end = event_end
+    event.location = event_location
+    event.address = event_address
+    event.color = event_color
+
+    event.save()
+
+    context = {'username': u_id,
+               'title': event_title,
+               'start': event_start,
+               'end': event_end,
+               'location': event_location,
+               'address': event_address,
+               'color': event_color
+               }
+
+    return HttpResponse(json.dumps(context), content_type='application/json')
+
+
+# Calendar 일정 이벤트 삭제
+def delete(request):
+    u_id = request.session['loginObj']['u_name']
+
+    event_id = request.GET['e_id']
+
+    Calendar.objects.get(id=event_id).delete()
+
+    context = {'username': u_id,
+               }
+
+    return HttpResponse(json.dumps(context), content_type='application/json')
+
+
+# 지도화면 이동 로직
+def map(request):
+    location = request.POST['eventLocation']
+    schedule = request.POST['eventName']
+    start = request.POST['eventStartDate']
+    end = request.POST['eventEndDate']
+
+    context = {
+        'location': location,
+        'schedule': schedule,
+        'start': start,
+        'end': end
+    }
+    return  render(request, 'maps/ui-maps.html', context)
+
+
+# Calendar 일정 바(bar) 사이즈 조절 시, 데이터베이스 날짜 수정
+def resize(request):
+    event_end = request.GET['e_end']
+    event_id = request.GET['e_id']
+
+    event = Calendar.objects.get(id=event_id)
+    event.end = event_end
+
+    event.save()
+
+    context = {
+               'end': event_end
+               }
+
+    return HttpResponse(json.dumps(context), content_type='application/json')
+
+
+# Calendar 일정 바(bar) 이동 시, 데이터베이스 날짜 수정
+def drop(request):
+    event_start = request.GET['e_start']
+    event_end = request.GET['e_end']
+    event_id = request.GET['e_id']
+
+    event = Calendar.objects.get(id=event_id)
+    event.start = event_start
+    event.end = event_end
+
+    event.save()
+
+    context = {
+        'start': event_start,
+        'end': event_end
+    }
+    return HttpResponse(json.dumps(context), content_type='application/json')
+
+
+# Calendar 일정 상세 내용에서 장소 검색 수정
+def fix_map(request):
+    location = request.POST['fixEventLocation']
+    schedule = request.POST['fixEventName']
+    start = request.POST['fixStartDate']
+    end = request.POST['fixEndDate']
+    eventId = request.POST['fixEventId']
+
+    context = {
+        'location': location,
+        'schedule': schedule,
+        'start': start,
+        'end': end,
+        'id': eventId
+    }
+    return  render(request, 'maps/ui-maps.html', context)
+```
+
