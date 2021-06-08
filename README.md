@@ -27,18 +27,44 @@
 
 
 
+## 개발 환경
+
+| **`<협업 Tool>`**                                         | **`<Front-end>`**                                            | **`<Back-end>`**                                  |
+| --------------------------------------------------------- | :----------------------------------------------------------- | :------------------------------------------------ |
+| - Github<br />- Google spreadsheet<br />- Google diagrams | - Kakao map API<br />- FullCalendar Library<br />- Google Calendar API<br />- Bootstrap<br />- HTML<br />- Javascript<br />- CSS | - Django<br />- sqlite3<br />- JQuery<br />- Ajax |
+
+
+
+## 문제점
+
+> - FullCalendar Library 적용 어려움
+> - Ajax 활용하여 Front-end 화면에서 입력하는 데이터 가져오기
+> - event log 기록을 적재하는 Data Doubling 현상
+> - 개별 일정 modal 창 안에 카카오맵 화면 출력
+
+
+
+## 해결 방안
+
+> - Googling, Stac-overflow, github issue 참고
+> - Ajax get 방식으로 데이터 가져오기 성공
+> - Data Doubling 시작되는 tag button에 unbind 함수 적용
+> - DOM 이해 및 코드 위치 수정으로 카카오맵 화면 출력 성공
+
+
+
 ## 배운점
 
-- 외부 라이브러리 사용 시 공식 문서 숙지의 중요성
-- CORS 정책 
-- Ajax get 방식 data 수/발신 방법
-- Bootstrap Modal 창 구현
-- html 화면 제어 process
-- javascript 웹 화면 로직 처리 process
-- MVT pattern
-- 외부 API 사용 방법 (Google Calendar API, Kakao Map API)
-- Django ORM Database 관리 및 data 처리
-- Django 내장 서버 sqlite3 사용 방법
+> - 외부 라이브러리 사용 시 공식 문서 (API) 숙지의 중요성
+> - CORS 정책
+> - Ajax get 방식 data 수/발신 방법
+> - Bootstrap Modal 창 구현
+> - html 화면 제어 process
+> - javascript 웹 화면 로직 처리 process
+> - MVT pattern
+> - 외부 API 사용 방법 (Google Calendar API, Kakao Map API)
+> - Django ORM Database 관리 및 data 처리
+> - Django 내장 서버 sqlite3 사용 방법
 
 
 
@@ -55,12 +81,6 @@
 ![image-20210227122218025](md-images/image-20210227122218025.png)
 
 
-
-## 개발 환경
-
-| **`<협업 Tool>`**                                         | **`<Front-end>`**                                            | **`<Back-end>`**        |
-| --------------------------------------------------------- | :----------------------------------------------------------- | :---------------------- |
-| - Github<br />- Google spreadsheet<br />- Google diagrams | - Kakao map API<br />- FullCalendar Library<br />- Google Calendar API<br />- Bootstrap<br />- HTML<br />- Javascript<br />- CSS | - Django<br />- sqlite3 |
 
 
 
@@ -82,9 +102,9 @@
 
 
 
-## 담당 기능
+## 담당 역할
 
-### **`<Calendar 기능>`**
+### **`<Calendar 개발>`**
 
 > ### **1) Google Calendar API `대한민국 공휴일` 연동**
 >
@@ -135,119 +155,6 @@
 
 
 ## 코드 리뷰
-
-- ### <Django 환경 설정>
-
-  `(Web_avangs/settings.py)`
-
-  ```python
-  # 수정한 부분만 표기합니다.
-  
-  ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-  
-  # 사용할 어플리케이션 추가
-  INSTALLED_APPS = [
-      'django.contrib.admin',
-      'django.contrib.auth',
-      'django.contrib.contenttypes',
-      'django.contrib.sessions',
-      'django.contrib.messages',
-      'django.contrib.staticfiles',
-      'users.apps.UsersConfig',
-      'maps.apps.MapsConfig',
-      'calendars.apps.CalendarsConfig',
-      'bookmarks.apps.BookmarksConfig',
-      'bootstrap4'
-  ]
-  
-  # 현재 프로젝트의 root url 설정
-  ROOT_URLCONF = 'Web_avangs.urls'
-  
-  # 현재 프로젝트의 탬플릿 설정을 통해, 전체 html 적용 설정
-  TEMPLATES = [
-      {
-          'BACKEND': 'django.template.backends.django.DjangoTemplates',
-          'DIRS': [os.path.join(BASE_DIR, 'templates')],
-          'APP_DIRS': True,
-          'OPTIONS': {
-              'context_processors': [
-                  'django.template.context_processors.debug',
-                  'django.template.context_processors.request',
-                  'django.contrib.auth.context_processors.auth',
-                  'django.contrib.messages.context_processors.messages',
-              ],
-          },
-      },
-  ]
-  
-  # Django가 제공해주는 sqlite3 database 사용
-  DATABASES = {
-      'default': {
-          'ENGINE': 'django.db.backends.sqlite3',
-          'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-      }
-  }
-  
-  # 한국 시간대로 변동
-  TIME_ZONE = 'Asia/Seoul'
-  
-  
-  # static 폴더 지정
-  STATIC_URL = '/static/'
-  STATICFILES_DIRS = [
-      os.path.join(BASE_DIR, 'static')
-  ]
-  ```
-
-
-
-- ### <calendar application model 설정> - data 구성
-
-  `(calendars/models.py)`
-
-  ```python
-  from django.db import models
-  
-  
-  class Calendar(models.Model):
-      username = models.CharField(max_length=200)
-      title = models.CharField(max_length=200)
-      start = models.CharField(max_length=50)
-      end = models.CharField(max_length=50)
-      location = models.CharField(max_length=200)
-      address = models.CharField(max_length=200)
-      color = models.CharField(max_length=50)
-  
-      def __str__(self):
-          return self.title
-  ```
-
-  
-
-- ### <admin 등록 & sqlite3 db 파일 생성>
-
-  `(calendars/admin.py)`
-
-  ```python
-  from django.contrib import admin
-  from calendars.models import Calendar
-  
-  admin.site.register(Calendar)
-  ```
-
- 
-
-`(Terminal)`
-
-  ```Treminal
-  # db 변동 내역 저장
-  (base) C:\Users\USER\Desktop\github\Project_1\Map_Calendar> python manage.py makemigrations
-  
-  # db 구성
-  (base) C:\Users\USER\Desktop\github\Project_1\Map_Calendar> python manage.py migrate
-  ```
-
-
 
 - ### <Calendar 화면 구성>
 
@@ -461,15 +368,14 @@
   
   </html>
   ```
-
   
-
+  
+  
 - ### <Calendar 로직 process>
 
   **`(static/js/calendar.js)`**
 
   ```javascript
-  
   function loadCalendar() {
       // html의 tag id를 가져와서 document 만들기
       var calendarEl = document.getElementById('calendar');
@@ -899,243 +805,358 @@
 
 
 
-## URL Conf
+- ### URL Conf
 
-(Web_avangs/urls.py)
+  `(Web_avangs/urls.py)`
 
-```python
-from django.contrib import admin
-from django.urls import path, include
-from . import views
-
-
-urlpatterns = [
-    path('', views.home, name='home'), # ==> 기본 url 주소일 경우 'Web_avangs/view.py' ==> home 메서드 사용
-    path('admin/', admin.site.urls),   # ==> 관리자 페이지 설정
-    path('users/', include('users.urls')), # ==> users application url conf 따로 관리
-    path('bookmarks/', include('bookmarks.urls')),
-    path('calendars/', include('calendars.urls')), # ==> calendar application url conf 따로 관리 ('calendars/urls.py' 에서!)
-    path('maps/', include('maps.urls')),
-    path('main/', views.main, name='main'),
-]
-```
-
-
-
-(calendars/urls.py)
-
-```python
-from django.urls import path
-from . import views
-
-app_name = 'calendars'  # calendar application의 url 관리를 대표하는 이름!
-
-urlpatterns = [
-    path('', views.calendar, name='calendar'), # ==>'' == 'http://localhost:8000/calendars' url을 의미함.
-    path('save/', views.save, name='save'), 
-    # ==> 'http://localhost:8000/calendars/save/' ==> url 호출할 때, views.py에서 save 함수 실행
-    
-    path('load/', views.load, name='load'),
-    path('fix/', views.fix, name='fix'),
-    path('delete/', views.delete, name='delete'),
-    path('map/', views.map, name='map'),
-    path('resize/', views.resize, name='resize'),
-    path('drop/', views.drop, name='drop'),
-    path('fix_map/', views.fix_map, name='fix_map')
-]
-```
+  ```python
+  from django.contrib import admin
+  from django.urls import path, include
+  from . import views
+  
+  
+  urlpatterns = [
+      path('', views.home, name='home'), # ==> 기본 url 주소일 경우 'Web_avangs/view.py' ==> home 메서드 사용
+      path('admin/', admin.site.urls),   # ==> 관리자 페이지 설정
+      path('users/', include('users.urls')), # ==> users application url conf 따로 관리
+      path('bookmarks/', include('bookmarks.urls')),
+      path('calendars/', include('calendars.urls')), # ==> calendar application url conf 따로 관리 ('calendars/urls.py' 에서!)
+      path('maps/', include('maps.urls')),
+      path('main/', views.main, name='main'),
+  ]
+  ```
 
 
+  `(calendars/urls.py)`
 
-(calendars/views.py)
+  ```python
+  from django.urls import path
+  from . import views
+  
+  app_name = 'calendars'  # calendar application의 url 관리를 대표하는 이름!
+  
+  urlpatterns = [
+      path('', views.calendar, name='calendar'), # ==>'' == 'http://localhost:8000/calendars' url을 의미함.
+      path('save/', views.save, name='save'), 
+      # ==> 'http://localhost:8000/calendars/save/' ==> url 호출할 때, views.py에서 save 함수 실행
+      
+      path('load/', views.load, name='load'),
+      path('fix/', views.fix, name='fix'),
+      path('delete/', views.delete, name='delete'),
+      path('map/', views.map, name='map'),
+      path('resize/', views.resize, name='resize'),
+      path('drop/', views.drop, name='drop'),
+      path('fix_map/', views.fix_map, name='fix_map')
+  ]
+  ```
 
-```python
-from django.shortcuts import render
-from django.http import HttpResponse
-from calendars.models import Calendar
-import json
+  `(calendars/views.py)`
+
+  ```python
+  from django.shortcuts import render
+  from django.http import HttpResponse
+  from calendars.models import Calendar
+  import json
+  
+  
+  # Calendar 메인화면 출력
+  def calendar(request):
+      return render(request, 'calendars/ui-calendars.html', {'page_title': 'CALENDAR'})
+  
+  
+  # Calendar 일정 이벤트 저장
+  def save(request):
+  	
+      # save 함수는 ajax 객체를 request로 받는다.
+      
+      event_title = request.GET['e_title']  # ajax를 GET방식으로 사용해서 GET을 사용!
+      event_start = request.GET['e_start']
+      event_end = request.GET['e_end']
+      event_location = request.GET['e_location']
+      event_address = request.GET['e_address']
+      event_color = request.GET['e_color']
+      u_id = request.session['loginObj']['u_name']
+  	
+      # Database에 새로운 데이터 생성
+      Calendar.objects.create(username=u_id,
+                              title=event_title,
+                              start=event_start,
+                              end=event_end,
+                              location=event_location,
+                              address=event_address,
+                              color=event_color
+                              )
+  	
+      # 가장 최근 data란 위에서 저장한 data를 의미함
+      recent_data = Calendar.objects.filter(username=u_id).order_by('-id')
+  	
+      # 이 context는 js에서 ajax방식으로 요청한 결과를 보내주는 내용!
+      context = {'username': u_id,
+                 'title': event_title,
+                 'start': event_start,
+                 'end': event_end,
+                 'location': event_location,
+                 'address': event_address,
+                 'color': event_color,
+                 'id': recent_data[0].id
+                 }
+  
+      return HttpResponse(json.dumps(context), content_type='application/json')
+  
+  
+  # Calendar 일정 이벤트 로드
+  def load(request):
+      u_id = request.session['loginObj']['u_name']
+      calendar_list = Calendar.objects.filter(username=u_id)
+  
+      context = []
+      for i in calendar_list:
+          list = {'id': i.id,
+                  'title': i.title,
+                  'start': i.start,
+                  'end': i.end,
+                  'location': i.location,
+                  'address': i.address,
+                  'color': i.color
+                  }
+          context.append(list)
+  
+      return HttpResponse(json.dumps(context), content_type='application/json')
+  
+  
+  # Calendar 일정 이벤트 수정
+  def fix(request):
+      u_id = request.session['loginObj']['u_name']
+      event_title = request.GET['e_title']
+      event_start = request.GET['e_start']
+      event_end = request.GET['e_end']
+      event_location = request.GET['e_location']
+      event_address = request.GET['e_address']
+      event_color = request.GET['e_color']
+      event_id = request.GET['e_id']
+  
+      event = Calendar.objects.get(id=event_id)
+  
+      event.title = event_title
+      event.start = event_start
+      event.end = event_end
+      event.location = event_location
+      event.address = event_address
+      event.color = event_color
+  
+      event.save()
+  
+      context = {'username': u_id,
+                 'title': event_title,
+                 'start': event_start,
+                 'end': event_end,
+                 'location': event_location,
+                 'address': event_address,
+                 'color': event_color
+                 }
+  
+      return HttpResponse(json.dumps(context), content_type='application/json')
+  
+  
+  # Calendar 일정 이벤트 삭제
+  def delete(request):
+      u_id = request.session['loginObj']['u_name']
+  
+      event_id = request.GET['e_id']
+  
+      Calendar.objects.get(id=event_id).delete()
+  
+      context = {'username': u_id,
+                 }
+  
+      return HttpResponse(json.dumps(context), content_type='application/json')
+  
+  
+  # 지도화면 이동 로직
+  def map(request):
+      location = request.POST['eventLocation']
+      schedule = request.POST['eventName']
+      start = request.POST['eventStartDate']
+      end = request.POST['eventEndDate']
+  
+      context = {
+          'location': location,
+          'schedule': schedule,
+          'start': start,
+          'end': end
+      }
+      return  render(request, 'maps/ui-maps.html', context)
+  
+  
+  # Calendar 일정 바(bar) 사이즈 조절 시, 데이터베이스 날짜 수정
+  def resize(request):
+      event_end = request.GET['e_end']
+      event_id = request.GET['e_id']
+  
+      event = Calendar.objects.get(id=event_id)
+      event.end = event_end
+  
+      event.save()
+  
+      context = {
+                 'end': event_end
+                 }
+  
+      return HttpResponse(json.dumps(context), content_type='application/json')
+  
+  
+  # Calendar 일정 바(bar) 이동 시, 데이터베이스 날짜 수정
+  def drop(request):
+      event_start = request.GET['e_start']
+      event_end = request.GET['e_end']
+      event_id = request.GET['e_id']
+  
+      event = Calendar.objects.get(id=event_id)
+      event.start = event_start
+      event.end = event_end
+  
+      event.save()
+  
+      context = {
+          'start': event_start,
+          'end': event_end
+      }
+      return HttpResponse(json.dumps(context), content_type='application/json')
+  
+  
+  # Calendar 일정 상세 내용에서 장소 검색 수정
+  def fix_map(request):
+      location = request.POST['fixEventLocation']
+      schedule = request.POST['fixEventName']
+      start = request.POST['fixStartDate']
+      end = request.POST['fixEndDate']
+      eventId = request.POST['fixEventId']
+  
+      context = {
+          'location': location,
+          'schedule': schedule,
+          'start': start,
+          'end': end,
+          'id': eventId
+      }
+      return  render(request, 'maps/ui-maps.html', context)
+  ```
+
+  
 
 
-# Calendar 메인화면 출력
-def calendar(request):
-    return render(request, 'calendars/ui-calendars.html', {'page_title': 'CALENDAR'})
+
+---
 
 
-# Calendar 일정 이벤트 저장
-def save(request):
-	
-    # save 함수는 ajax 객체를 request로 받는다.
-    
-    event_title = request.GET['e_title']  # ajax를 GET방식으로 사용해서 GET을 사용!
-    event_start = request.GET['e_start']
-    event_end = request.GET['e_end']
-    event_location = request.GET['e_location']
-    event_address = request.GET['e_address']
-    event_color = request.GET['e_color']
-    u_id = request.session['loginObj']['u_name']
-	
-    # Database에 새로운 데이터 생성
-    Calendar.objects.create(username=u_id,
-                            title=event_title,
-                            start=event_start,
-                            end=event_end,
-                            location=event_location,
-                            address=event_address,
-                            color=event_color
-                            )
-	
-    # 가장 최근 data란 위에서 저장한 data를 의미함
-    recent_data = Calendar.objects.filter(username=u_id).order_by('-id')
-	
-    # 이 context는 js에서 ajax방식으로 요청한 결과를 보내주는 내용!
-    context = {'username': u_id,
-               'title': event_title,
-               'start': event_start,
-               'end': event_end,
-               'location': event_location,
-               'address': event_address,
-               'color': event_color,
-               'id': recent_data[0].id
-               }
 
-    return HttpResponse(json.dumps(context), content_type='application/json')
+- ### <Django 환경 설정>
 
+  `(Web_avangs/settings.py)`
 
-# Calendar 일정 이벤트 로드
-def load(request):
-    u_id = request.session['loginObj']['u_name']
-    calendar_list = Calendar.objects.filter(username=u_id)
-
-    context = []
-    for i in calendar_list:
-        list = {'id': i.id,
-                'title': i.title,
-                'start': i.start,
-                'end': i.end,
-                'location': i.location,
-                'address': i.address,
-                'color': i.color
-                }
-        context.append(list)
-
-    return HttpResponse(json.dumps(context), content_type='application/json')
-
-
-# Calendar 일정 이벤트 수정
-def fix(request):
-    u_id = request.session['loginObj']['u_name']
-    event_title = request.GET['e_title']
-    event_start = request.GET['e_start']
-    event_end = request.GET['e_end']
-    event_location = request.GET['e_location']
-    event_address = request.GET['e_address']
-    event_color = request.GET['e_color']
-    event_id = request.GET['e_id']
-
-    event = Calendar.objects.get(id=event_id)
-
-    event.title = event_title
-    event.start = event_start
-    event.end = event_end
-    event.location = event_location
-    event.address = event_address
-    event.color = event_color
-
-    event.save()
-
-    context = {'username': u_id,
-               'title': event_title,
-               'start': event_start,
-               'end': event_end,
-               'location': event_location,
-               'address': event_address,
-               'color': event_color
-               }
-
-    return HttpResponse(json.dumps(context), content_type='application/json')
+  ```python
+  # 수정한 부분만 표기합니다.
+  
+  ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+  
+  # 사용할 어플리케이션 추가
+  INSTALLED_APPS = [
+      'django.contrib.admin',
+      'django.contrib.auth',
+      'django.contrib.contenttypes',
+      'django.contrib.sessions',
+      'django.contrib.messages',
+      'django.contrib.staticfiles',
+      'users.apps.UsersConfig',
+      'maps.apps.MapsConfig',
+      'calendars.apps.CalendarsConfig',
+      'bookmarks.apps.BookmarksConfig',
+      'bootstrap4'
+  ]
+  
+  # 현재 프로젝트의 root url 설정
+  ROOT_URLCONF = 'Web_avangs.urls'
+  
+  # 현재 프로젝트의 탬플릿 설정을 통해, 전체 html 적용 설정
+  TEMPLATES = [
+      {
+          'BACKEND': 'django.template.backends.django.DjangoTemplates',
+          'DIRS': [os.path.join(BASE_DIR, 'templates')],
+          'APP_DIRS': True,
+          'OPTIONS': {
+              'context_processors': [
+                  'django.template.context_processors.debug',
+                  'django.template.context_processors.request',
+                  'django.contrib.auth.context_processors.auth',
+                  'django.contrib.messages.context_processors.messages',
+              ],
+          },
+      },
+  ]
+  
+  # Django가 제공해주는 sqlite3 database 사용
+  DATABASES = {
+      'default': {
+          'ENGINE': 'django.db.backends.sqlite3',
+          'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+      }
+  }
+  
+  # 한국 시간대로 변동
+  TIME_ZONE = 'Asia/Seoul'
+  
+  
+  # static 폴더 지정
+  STATIC_URL = '/static/'
+  STATICFILES_DIRS = [
+      os.path.join(BASE_DIR, 'static')
+  ]
+  ```
 
 
-# Calendar 일정 이벤트 삭제
-def delete(request):
-    u_id = request.session['loginObj']['u_name']
 
-    event_id = request.GET['e_id']
+- ### <calendar application model 설정> - data 구성
 
-    Calendar.objects.get(id=event_id).delete()
+  `(calendars/models.py)`
 
-    context = {'username': u_id,
-               }
+  ```python
+  from django.db import models
+  
+  
+  class Calendar(models.Model):
+      username = models.CharField(max_length=200)
+      title = models.CharField(max_length=200)
+      start = models.CharField(max_length=50)
+      end = models.CharField(max_length=50)
+      location = models.CharField(max_length=200)
+      address = models.CharField(max_length=200)
+      color = models.CharField(max_length=50)
+  
+      def __str__(self):
+          return self.title
+  ```
 
-    return HttpResponse(json.dumps(context), content_type='application/json')
+  
 
+- ### <admin 등록 & sqlite3 db 파일 생성>
 
-# 지도화면 이동 로직
-def map(request):
-    location = request.POST['eventLocation']
-    schedule = request.POST['eventName']
-    start = request.POST['eventStartDate']
-    end = request.POST['eventEndDate']
+  `(calendars/admin.py)`
 
-    context = {
-        'location': location,
-        'schedule': schedule,
-        'start': start,
-        'end': end
-    }
-    return  render(request, 'maps/ui-maps.html', context)
+  ```python
+  from django.contrib import admin
+  from calendars.models import Calendar
+  
+  admin.site.register(Calendar)
+  ```
 
+ 
 
-# Calendar 일정 바(bar) 사이즈 조절 시, 데이터베이스 날짜 수정
-def resize(request):
-    event_end = request.GET['e_end']
-    event_id = request.GET['e_id']
+`(Terminal)`
 
-    event = Calendar.objects.get(id=event_id)
-    event.end = event_end
-
-    event.save()
-
-    context = {
-               'end': event_end
-               }
-
-    return HttpResponse(json.dumps(context), content_type='application/json')
-
-
-# Calendar 일정 바(bar) 이동 시, 데이터베이스 날짜 수정
-def drop(request):
-    event_start = request.GET['e_start']
-    event_end = request.GET['e_end']
-    event_id = request.GET['e_id']
-
-    event = Calendar.objects.get(id=event_id)
-    event.start = event_start
-    event.end = event_end
-
-    event.save()
-
-    context = {
-        'start': event_start,
-        'end': event_end
-    }
-    return HttpResponse(json.dumps(context), content_type='application/json')
-
-
-# Calendar 일정 상세 내용에서 장소 검색 수정
-def fix_map(request):
-    location = request.POST['fixEventLocation']
-    schedule = request.POST['fixEventName']
-    start = request.POST['fixStartDate']
-    end = request.POST['fixEndDate']
-    eventId = request.POST['fixEventId']
-
-    context = {
-        'location': location,
-        'schedule': schedule,
-        'start': start,
-        'end': end,
-        'id': eventId
-    }
-    return  render(request, 'maps/ui-maps.html', context)
-```
-
+  ```Treminal
+  # db 변동 내역 저장
+  (base) C:\Users\USER\Desktop\github\Project_1\Map_Calendar> python manage.py makemigrations
+  
+  # db 구성
+  (base) C:\Users\USER\Desktop\github\Project_1\Map_Calendar> python manage.py migrate
+  ```
